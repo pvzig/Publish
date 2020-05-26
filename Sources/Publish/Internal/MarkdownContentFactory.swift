@@ -21,14 +21,16 @@ internal struct MarkdownContentFactory<Site: Website> {
 
     func makeItem(fromFile file: File,
                   at path: Path,
+                  rawContent: Bool,
                   sectionID: Site.SectionID) throws -> Item<Site> {
-        let markdown = try parser.parse(file.readAsString())
+        let text = try file.readAsString()
+        let markdown = parser.parse(text)
         let decoder = makeMetadataDecoder(for: markdown)
 
         let metadata = try Site.ItemMetadata(from: decoder)
         let path = try decoder.decodeIfPresent("path", as: Path.self) ?? path
         let tags = try decoder.decodeIfPresent("tags", as: [Tag].self)
-        let content = try makeContent(fromMarkdown: markdown, file: file, decoder: decoder)
+        let content = rawContent ? Content(body: Content.Body(stringLiteral: text)) : try makeContent(fromMarkdown: markdown, file: file, decoder: decoder)
         let rssProperties = try decoder.decodeIfPresent("rss", as: ItemRSSProperties.self)
 
         return Item(

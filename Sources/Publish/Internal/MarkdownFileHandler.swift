@@ -9,6 +9,7 @@ import Files
 internal struct MarkdownFileHandler<Site: Website> {
     func addMarkdownFiles(
         in folder: Folder,
+        rawContent: Bool,
         to context: inout PublishingContext<Site>
     ) throws {
         let factory = context.makeMarkdownContentFactory()
@@ -56,6 +57,7 @@ internal struct MarkdownFileHandler<Site: Website> {
                     let item = try factory.makeItem(
                         fromFile: file,
                         at: path,
+                        rawContent: rawContent,
                         sectionID: sectionID
                     )
 
