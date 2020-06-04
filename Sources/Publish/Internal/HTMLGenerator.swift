@@ -140,6 +140,8 @@ private extension HTMLGenerator {
             return "\(location.path)/index.html"
         case .standAloneFiles:
             return "\(location.path).html"
+        case .standAloneFilesClean:
+            return location.path
         }
     }
 }

@@ -11,6 +11,9 @@ public enum HTMLFileMode {
     /// Stand-alone HTML files should be generated, so that `section/item`
     /// becomes `section/item.html`.
     case standAloneFiles
+    /// Stand-alone HTML files should be generated, so that `section/item`
+    /// becomes `section/item`.
+    case standAloneFilesClean
     /// HTML index files wrapped in folders should be generated, so that
     /// `section/item` becomes `section/item/index.html`.
     case foldersAndIndexFiles
