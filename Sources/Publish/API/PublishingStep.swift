@@ -128,10 +128,10 @@ public extension PublishingStep {
     /// the website. The root folders will be parsed as sections, and the
     /// files within them as items, while root files will be parsed as pages.
     /// - parameter path: The path of the Markdown folder to add (default: `Content`).
-    static func addMarkdownFiles(at path: Path = "Content", rawContent: Bool = false) -> Self {
+    static func addMarkdownFiles(at path: Path = "Content", customContentParser: ((String, Site.ItemMetadata) -> Content)? = nil) -> Self {
         step(named: "Add Markdown files from '\(path)' folder") { context in
             let folder = try context.folder(at: path)
-            try MarkdownFileHandler().addMarkdownFiles(in: folder, rawContent: rawContent, to: &context)
+            try MarkdownFileHandler().addMarkdownFiles(in: folder, customContentParser: customContentParser, to: &context)
         }
     }
     
