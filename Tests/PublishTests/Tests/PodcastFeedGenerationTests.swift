@@ -25,6 +25,26 @@ final class PodcastFeedGenerationTests: PublishTestCase {
         XCTAssertFalse(feed.contains("Not included"))
     }
 
+    func testOnlyIncludingItemsMatchingPredicate() throws {
+        let folder = try Folder.createTemporary()
+
+        try generateFeed(
+            in: folder,
+            itemPredicate: \.path == "one/a",
+            content: [
+                "one/a.md": """
+                \(makeStubbedAudioMetadata())
+                # Included
+                """,
+                "one/b.md": "# Not included"
+            ]
+        )
+
+        let feed = try folder.file(at: "Output/feed.rss").readAsString()
+        XCTAssertTrue(feed.contains("Included"))
+        XCTAssertFalse(feed.contains("Not included"))
+    }
+
     func testConvertingRelativeLinksToAbsolute() throws {
         let folder = try Folder.createTemporary()
 
@@ -144,19 +164,6 @@ final class PodcastFeedGenerationTests: PublishTestCase {
     }
 }
 
-extension PodcastFeedGenerationTests {
-    static var allTests: Linux.TestList<PodcastFeedGenerationTests> {
-        [
-            ("testOnlyIncludingSpecifiedSection", testOnlyIncludingSpecifiedSection),
-            ("testConvertingRelativeLinksToAbsolute", testConvertingRelativeLinksToAbsolute),
-            ("testItemPrefixAndSuffix", testItemPrefixAndSuffix),
-            ("testReusingPreviousFeedIfNoItemsWereModified", testReusingPreviousFeedIfNoItemsWereModified),
-            ("testNotReusingPreviousFeedIfConfigChanged", testNotReusingPreviousFeedIfConfigChanged),
-            ("testNotReusingPreviousFeedIfItemWasAdded", testNotReusingPreviousFeedIfItemWasAdded)
-        ]
-    }
-}
-
 private extension PodcastFeedGenerationTests {
     typealias Site = WebsiteStub.WithPodcastMetadata
     typealias Configuration = PodcastFeedConfiguration<Site>
@@ -190,6 +197,7 @@ private extension PodcastFeedGenerationTests {
     func generateFeed(
         in folder: Folder,
         config: Configuration? = nil,
+        itemPredicate: Predicate<Item<Site>>? = nil,
         generationSteps: [PublishingStep<Site>] = [
             .addMarkdownFiles()
         ],
@@ -200,6 +208,7 @@ private extension PodcastFeedGenerationTests {
             .group(generationSteps),
             .generatePodcastFeed(
                 for: .one,
+                itemPredicate: itemPredicate,
                 config: config ?? makeConfigStub(),
                 date: date
             )

@@ -6,19 +6,25 @@
 
 import Foundation
 import Plot
+import CollectionConcurrencyKit
 
 internal struct PodcastFeedGenerator<Site: Website> where Site.ItemMetadata: PodcastCompatibleWebsiteItemMetadata {
     let sectionID: Site.SectionID
+    let itemPredicate: Predicate<Item<Site>>?
     let config: PodcastFeedConfiguration<Site>
     let context: PublishingContext<Site>
     let date: Date
 
-    func generate() throws {
+    func generate() async throws {
         let outputFile = try context.createOutputFile(at: config.targetPath)
         let cacheFile = try context.cacheFile(named: "feed")
         let oldCache = try? cacheFile.read().decoded() as Cache
         let section = context.sections[sectionID]
-        let items = section.items.sorted(by: { $0.date > $1.date })
+        var items = section.items.sorted(by: { $0.date > $1.date })
+
+        if let predicate = itemPredicate?.inverse() {
+            items.removeAll(where: predicate.matches)
+        }
 
         if let date = context.lastGenerationDate, let cache = oldCache {
             if cache.config == config, cache.itemCount == items.count {
@@ -30,7 +36,7 @@ internal struct PodcastFeedGenerator<Site: Website> where Site.ItemMetadata: Pod
             }
         }
 
-        let feed = try makeFeed(containing: items, section: section)
+        let feed = try await makeFeed(containing: items, section: section)
             .render(indentedBy: config.indentation)
 
         let newCache = Cache(config: config, feed: feed, itemCount: items.count)
@@ -47,7 +53,7 @@ private extension PodcastFeedGenerator {
     }
 
     func makeFeed(containing items: [Item<Site>],
-                  section: Section<Site>) throws -> PodcastFeed {
+                  section: Section<Site>) async throws -> PodcastFeed {
         try PodcastFeed(
             .unwrap(config.newFeedURL, Node.newFeedURL),
             .title(context.site.name),
@@ -73,7 +79,7 @@ private extension PodcastFeedGenerator {
             ),
             .type(config.type),
             .image(config.imageURL),
-            .forEach(items.enumerated()) { index, item in
+            .group(await items.concurrentMap { item in
                 guard let audio = item.audio else {
                     throw PodcastError(path: item.path, reason: .missingAudio)
                 }
@@ -111,7 +117,7 @@ private extension PodcastFeedGenerator {
                         title: title
                     )
                 )
-            }
+            })
         )
     }
 }

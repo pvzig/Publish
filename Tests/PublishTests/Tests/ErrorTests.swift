@@ -81,7 +81,7 @@ final class ErrorTests: PublishTestCase {
                 }
             ]),
             PublishingError(
-                stepName: "Mutate items",
+                stepName: "Mutate all items",
                 path: "one/path/to/item",
                 infoMessage: "Item mutation failed",
                 underlyingError: Error()
@@ -167,21 +167,5 @@ final class ErrorTests: PublishTestCase {
         )
 
         CommandLine.arguments.removeLast()
-    }
-}
-
-extension ErrorTests {
-    static var allTests: Linux.TestList<ErrorTests> {
-        [
-            ("testErrorForInvalidRootPath", testErrorForInvalidRootPath),
-            ("testErrorForMissingMarkdownMetadata", testErrorForMissingMarkdownMetadata),
-            ("testErrorForInvalidMarkdownMetadata", testErrorForInvalidMarkdownMetadata),
-            ("testErrorForThrowingDuringItemMutation", testErrorForThrowingDuringItemMutation),
-            ("testErrorForMissingPage", testErrorForMissingPage),
-            ("testErrorForThrowingDuringPageMutation", testErrorForThrowingDuringPageMutation),
-            ("testErrorForMissingFolder", testErrorForMissingFolder),
-            ("testErrorForMissingFile", testErrorForMissingFile),
-            ("testErrorForNoPublishingSteps", testErrorForNoPublishingSteps)
-        ]
     }
 }
