@@ -131,7 +131,7 @@ public extension PublishingStep {
     static func addMarkdownFiles(at path: Path = "Content", customContentParser: ((String, Site.ItemMetadata) -> Content)? = nil) -> Self {
         step(named: "Add Markdown files from '\(path)' folder") { context in
             let folder = try context.folder(at: path)
-            try MarkdownFileHandler().addMarkdownFiles(in: folder, customContentParser: customContentParser, to: &context)
+            try await MarkdownFileHandler().addMarkdownFiles(in: folder, customContentParser: customContentParser, to: &context)
         }
     }
     
