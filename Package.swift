@@ -10,7 +10,6 @@ import PackageDescription
 
 let package = Package(
     name: "Publish",
-    platforms: [.macOS(.v12)],
     products: [
         .library(name: "Publish", targets: ["Publish"]),
         .executable(name: "publish-cli", targets: ["PublishCLI"])
